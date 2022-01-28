@@ -1,28 +1,32 @@
-from re import I
-import discord
-from discord.ext import commands
+import requests
 import json
-import slave
-
+API_ENDPOINT = 'https://discord.com/api/v8'
 
 def read_config():
-    config = open("config.json")
-    re =json.load(config)
-    config.close()
-    return re
+    myconfig = open("config.json")
+    re = json.load(myconfig)
+    myconfig.close()
+    return re["master_auth"], re["master_client_id"], re["master_client_secret"], re["master_redirect_uri"], re["slave_auth"], re["prefix"] 
 
-class Bot(discord.Client):
-    def __init__(self):
-        discord.Client.__init__(self)
-        self.prefix = read_config()["prefix"]
-    async def on_ready(self):
-        print(self.user)
-    async def on_message(self,msg):
-        if msg.content[0] == self.prefix:
-            print("COMMAND RECEIVED")
-        print(msg.content)
+MASTER_AUTH, MASTER_CLIENT_ID, MASTER_CLIENT_SECRET, MASTER_REDIRECT_URI, SLAVE_TOKEN, PREFIX = read_config()
+
+def exchange_code(code):
+    data = {
+        'client_id': MASTER_CLIENT_ID,
+        'client_secret': MASTER_CLIENT_SECRET,
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': MASTER_REDIRECT_URI
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    r = requests.post('%s/oauth2/token' % API_ENDPOINT, data=data, headers=headers)
+    r.raise_for_status()
+    return r.json()
 
 
-client = Bot()
-client.run(read_config()["master_auth"])
-
+theheader = {
+    "Authorization": f"Bot {MASTER_AUTH}"
+}
+print(requests.get(API_ENDPOINT+"/users/@me/guilds",headers=theheader).json()[0])

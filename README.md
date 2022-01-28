@@ -1,12 +1,14 @@
+# WARNING
+
+THIS README IS NOT FINISHED DO NOT DO WHAT IT SAYS IN HERE
+
 # playlist-not-bot
 
 This is a discord bot that uses a slave discord account to queue songs up
 
 # configuration
 
-First, install `discord.py` with `pip install discord.py`.
-
-then, make a `config.json` file in the root folder and put your bot's token, your slave account's (real discord account) token and your desired bot prefix like this:
+Make a `config.json` file in the root folder and put your bot's token, your slave account's (real discord account) token and your desired bot prefix like this:
 
 ```json
 {
