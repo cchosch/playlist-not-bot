@@ -14,8 +14,8 @@ Then, make a `config.json` file in the root folder and put your bot's informatio
 {
   "master_auth": "BOT TOKEN HERE",
   "master_client_id": "BOT CLIENT ID HERE",
-  "master_client_secret":"BOT SECRET HERE",
-  "master_redirect_uri": "BOT REDIRECT URI HERE"
+  "master_client_secret": "BOT SECRET HERE",
+  "master_redirect_uri": "BOT REDIRECT URI HERE",
   "slave_auth": "SLAVE ACCOUNT TOKEN HERE",
   "prefix": ";"
 }
