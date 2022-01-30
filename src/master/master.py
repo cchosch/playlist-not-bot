@@ -2,6 +2,8 @@ from tkinter import W
 import requests
 import time
 import json
+import asyncio
+
 epoch_tracker = {}
 API_ENDPOINT = 'https://discord.com/api/v9'
 def read_config():
@@ -35,6 +37,8 @@ def exchange_code(code):
 def add_to_server(token, userID, guildID):
     requests.put(API_ENDPOINT+"/guilds/"+guildID+"/members/"+userID,headers={"Authorize":MASTER_AUTH},data={"access_token":token})
     
+async def get_ratelimits(headers):
+    return float(headers["x-ratelimit-reset"]), float(headers["x-ratelimit-remaining"])
 
 def main():
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
@@ -44,12 +48,10 @@ def main():
     }
     while True:
         now = time.time()
-        print(100/0)
         if epoch_tracker[guilds_url][0]-now > 0:
             time.sleep(epoch_tracker[guilds_url][0]-now)
         guilds_responce = requests.get(guilds_url,headers=master_auth_header)
-        print(guilds_responce.headers)
-        epoch_tracker[guilds_url][0], epoch_tracker[guilds_url][1] = float(guilds_responce.headers["x-ratelimit-reset"]), float(guilds_responce.headers["x-ratelimit-remaining"])
+        epoch_tracker[guilds_url][0], epoch_tracker[guilds_url][1] = get_ratelimits(guilds_responce.headers)
 
 
 
