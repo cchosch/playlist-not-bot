@@ -1,9 +1,12 @@
 from tkinter import W
+from flask import g
 import requests
 import time
 import json
-import asyncio
+import bot
+import threading
 
+guild_threads = {}
 epoch_tracker = {}
 API_ENDPOINT = 'https://discord.com/api/v9'
 def read_config():
@@ -37,7 +40,7 @@ def exchange_code(code):
 def add_to_server(token, userID, guildID):
     requests.put(API_ENDPOINT+"/guilds/"+guildID+"/members/"+userID,headers={"Authorize":MASTER_AUTH},data={"access_token":token})
     
-async def get_ratelimits(headers):
+def get_ratelimits(headers):
     return float(headers["x-ratelimit-reset"]), float(headers["x-ratelimit-remaining"])
 
 def main():
@@ -48,10 +51,14 @@ def main():
     }
     while True:
         now = time.time()
-        if epoch_tracker[guilds_url][0]-now > 0:
-            time.sleep(epoch_tracker[guilds_url][0]-now)
+        if epoch_tracker[guilds_url][0]-time.time() > 0.2:
+            time.sleep(epoch_tracker[guilds_url][0]-time.time())
         guilds_responce = requests.get(guilds_url,headers=master_auth_header)
         epoch_tracker[guilds_url][0], epoch_tracker[guilds_url][1] = get_ratelimits(guilds_responce.headers)
+        for guild in guilds_responce.json():
+            if guild["id"] not in guild_threads.keys():
+                guild_threads[guild["id"]] = threading.Thread(bot.read_guild_messages,args= guild["id"])
+                guild_threads[guild["id"]].start()
 
 
 

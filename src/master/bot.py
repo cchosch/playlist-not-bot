@@ -1,18 +1,13 @@
 import requests
-import json
+import time
 from master import *
-from master.master import MASTER_AUTH
+bot_epoch_tracker = {}
 
-print(API_ENDPOINT)
-
-class Bot():
-    def __init__(self):
-        self.ratelimits = {}
-
-    def updateGuilds(self):
-        requests.get(API_ENDPOINT+"/users/@me/guilds",headers={"Authorizaiton":f"Bot {MASTER_AUTH}"})
-
-    def get_new_messages(self):
-        pass
+def read_guild_messages(guildid):
+    bot_epoch_tracker[guildid] = [time.time(), 1]
+    while True:
+        for guild in guild_tracker:
+            print(guild)
+            time.sleep(2)
 
     
