@@ -58,8 +58,7 @@ def add_to_guild(access_token, guildID): # ripped from https://dev.to/dandev95/a
         "Authorization" : f"Bot {MASTER_AUTH}",
         "Content-Type": "application/json"
     }
-    response = requests.put(f"{API_ENDPOINT}/guilds/{guildID}/members/{SLAVE_ID}", headers=headers, json=data)
-    print(response.json())
+    print(requests.put(f"{API_ENDPOINT}/guilds/{guildID}/members/{SLAVE_ID}", headers=headers, json=data))
 
 def play_playlist( playlist, channelid, prefix):
     for song in playlist:
