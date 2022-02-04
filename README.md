@@ -20,4 +20,25 @@ Then, make a `config.json` file in the root folder and put your bot's informatio
 }
 ```
 
+That's it, your bot is ready to go! The bot stores all of the playlists in a json file in the root folder called `playlists.json`. The formatting of `playlists.json` is as follows:
+
+```json
+[
+  {
+    "id": "GUILDID1",
+    "playlists": {
+      "firstplaylist":["example song", "example song"],
+      "secondplaylist":["example song", "example song"]
+    }
+  }
+  {
+    "id": "GUILDID2",
+    "playlists":{
+      "firstplaylist":["example song", "example song"],
+      "secondplaylist":["example song","example song"]
+    }
+  }
+]
+```
+
 DO NOT CHANGE THE NAME OF THIS FILE OR USE THESE TOKENS IN PLAIN TEXT ANYWHERE IN YOUR PROJECT IF YOU PLAN ON COMMITING TO GITHUB AT ANY TIME, THIS WILL GIVE HACKERS THE ABILITY TO HACK THE DISCORD ACCOUNTS
