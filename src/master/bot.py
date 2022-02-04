@@ -51,9 +51,54 @@ def read_guild_messages(guildid):
                     if messages[i]["content"][0] == PREFIX:
                         theargs = messages[i]["content"].split()
                         if theargs[0] == f"{PREFIX}add":
-                            add_song(theargs)
+                            add_song(guildid,theargs)
 
-def add_song(args):
+def add_song(guildid, args):
+    '''
+    playlist.json format:
+    [
+        {
+            "id": "GUILDID1",
+            "playlists": {
+                "firstplaylist":["example song", "example song"],
+                "secondplaylist":["example song", "example song"]
+            }
+        }
+        {
+            "id": "GUILDID2",
+            "playlists":{
+                "firstplaylist":["example song", "example song"],
+                "secondplaylist":["example song","example song"]
+            }
+        }
+    ]
+    '''
+    
     print("HELLO")
     playlist = args[1]
     song = " ".join(args[2:len(args)])
+    playlist_file = open("playlists.json")
+    playlist_servers = json.load(playlist_file)
+    playlist_file.close()
+    found = False
+    for ps in playlist_servers:
+        if ps["id"] == guildid:
+            found = True
+            if playlist in ps["playlists"].keys():
+                ps["playlists"][playlist].append(song)
+            else:
+                ps["playlists"][playlist] = [song]
+    if not found:
+        playlist_servers.append({
+            "id":guildid,
+            playlists: {
+                playlist:[song]
+            }
+        })
+    json.dumps(playlist_servers)
+    playlist_file = open("playlists.json", "w")
+    
+     
+            
+         
+    
