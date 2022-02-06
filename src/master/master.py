@@ -37,6 +37,7 @@ def main():
     for guild in guilds_responce.json():
         time.sleep(0.5)
         guild_threads[guild["id"]] = threading.Thread(target = bot.read_guild_messages, args = (guild["id"],))
+        print(guild["id"])
         guild_threads[guild["id"]].start()
     while True:
         if epoch_tracker[guilds_url][0]-time.time() > epoch_tracker[guilds_url][1]:

@@ -1,6 +1,7 @@
 import requests
 import time
 import sys
+import threading
 import os
 import json
 import dateutil.parser as dp
@@ -29,21 +30,25 @@ def read_guild_messages(guildid):
         if epoch_tracker[channels_url][0]-time.time() < 0:
             channels = requests.get(channels_url,headers=MASTER_AUTH_HEADER)
             epoch_tracker[channels_url][0], epoch_tracker[channels_url][1] =get_ratelimits(channels.headers)
-        print(channels.content)
         for channel in channels.json():
+            if f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages" not in epoch_tracker.keys():
+                epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"] = [time.time(), 1]
             if channel["type"] != 0:
                 continue
             if channel["id"] not in read_messages.keys():
                 read_messages[channel["id"]] = ["" for i in range(10)]
+                print("RESET")
+            if epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][0]-time.time() > 0:
+                time.sleep(epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][0]-time.time())
             messages = requests.get(f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages",headers=MASTER_AUTH_HEADER)
-            print(messages)
-            messages = messages.json
+            epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][0], epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][1] = get_ratelimits(messages.headers)
+            messages = messages.json()
             for i in range(len(messages)):
                 if i > 9:
                     break
-                if messages[i]["id"] not in read_messages and conv_utime(messages[i]["timestamp"])-start > 0:
-                    read_messages[channel["id"]].pop(len(read_messages)-1)
-                    read_messages[channel["id"]].append(messages[i]["id"])
+                if  str(messages[i]["id"]) not in read_messages[channel["id"]] and conv_utime(messages[i]["timestamp"])-start > 0:
+                    read_messages[channel["id"]].pop(len(read_messages[channel["id"]])-1)
+                    read_messages[channel["id"]].insert(0, messages[i]["id"])
                     try:
                         messages[i]["content"][0]
                     except IndexError:
@@ -52,6 +57,11 @@ def read_guild_messages(guildid):
                         theargs = messages[i]["content"].split()
                         if theargs[0] == f"{PREFIX}add":
                             add_song(guildid,theargs)
+                        if theargs[0] == f"{PREFIX}play":
+                            try:
+                                threading.Thread(target=play_playlist,args=(theargs[1], guildid, channel["id"], theargs[2])).start()
+                            except:
+                                pass
 
 def add_song(guildid, args):
     '''
@@ -74,7 +84,6 @@ def add_song(guildid, args):
     ]
     '''
     
-    print("HELLO")
     playlist = args[1]
     song = " ".join(args[2:len(args)])
     playlist_file = open("playlists.json")
@@ -91,14 +100,13 @@ def add_song(guildid, args):
     if not found:
         playlist_servers.append({
             "id":guildid,
-            playlists: {
+            "playlists": {
                 playlist:[song]
             }
         })
-    json.dumps(playlist_servers)
     playlist_file = open("playlists.json", "w")
+    playlist_file.write(json.dumps(playlist_servers,indent=2))
     
-     
-            
+    
          
     

@@ -60,8 +60,16 @@ def add_to_guild(access_token, guildID): # ripped from https://dev.to/dandev95/a
     }
     print(requests.put(f"{API_ENDPOINT}/guilds/{guildID}/members/{SLAVE_ID}", headers=headers, json=data))
 
-def play_playlist( playlist, channelid, prefix):
-    for song in playlist:
-        time.sleep(2+random.uniform(0.0,0.3))
-        requests.post(API_ENDPOINT+"/channels/"+channelid+"/messages",headers={"Authorization":f"{SLAVE_TOKEN}"},data={"content":f"{prefix}play "+song})
+def play_playlist(playlist_name, guildid, channelid, prefix):
+    playlist_file = open("playlists.json")
+    p_obj = json.load(playlist_file)
+    playlist_file.close()
+    for g in p_obj:
+        if g["id"] == guildid:
+            for playlists in g["playlists"].keys():
+                if playlists == playlist_name:
+                    for song in g["playlists"][playlist_name]:
+                        time.sleep(2+random.uniform(0.0,0.3))
+                        print(song)
+                        requests.post(API_ENDPOINT+"/channels/"+channelid+"/messages",headers={"Authorization":f"{SLAVE_TOKEN}"},data={"content":f"{prefix}play "+song})
 
