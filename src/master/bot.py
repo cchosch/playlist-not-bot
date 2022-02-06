@@ -2,6 +2,7 @@ import requests
 import time
 import sys
 import threading
+from inspect import currentframe, getframeinfo
 import os
 import json
 import dateutil.parser as dp
@@ -22,37 +23,43 @@ def read_guild_messages(guildid):
     except KeyError:
         pass
     start = time.time()
-    last = time.time()-5
     channels_url = f"{API_ENDPOINT}/guilds/{guildid}/channels"
     epoch_tracker[channels_url] = [time.time(),1]
     channels = requests.get("https://google.com")
     while True:
         if epoch_tracker[channels_url][0]-time.time() < 0:
             channels = requests.get(channels_url,headers=MASTER_AUTH_HEADER)
-            epoch_tracker[channels_url][0], epoch_tracker[channels_url][1] =get_ratelimits(channels.headers)
+            epoch_tracker[channels_url][0], epoch_tracker[channels_url][1] = get_ratelimits(channels.headers)
         for channel in channels.json():
-            if f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages" not in epoch_tracker.keys():
-                epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"] = [time.time(), 1]
+            messages_url = f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"
+            if messages_url not in epoch_tracker.keys():
+                epoch_tracker[messages_url] = [time.time(), 1]
             if channel["type"] != 0:
                 continue
             if channel["id"] not in read_messages.keys():
                 read_messages[channel["id"]] = ["" for i in range(10)]
-                print("RESET")
-            if epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][0]-time.time() > 0:
-                time.sleep(epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][0]-time.time())
-            messages = requests.get(f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages",headers=MASTER_AUTH_HEADER)
-            epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][0], epoch_tracker[f"{API_ENDPOINT}/channels/"+channel["id"]+"/messages"][1] = get_ratelimits(messages.headers)
+            if epoch_tracker[messages_url][0]-time.time() > 0:
+                time.sleep((epoch_tracker[messages_url][0]-time.time())/epoch_tracker[messages_url][1])
+            messages = requests.get(messages_url,headers=MASTER_AUTH_HEADER)
+            epoch_tracker[messages_url][0], epoch_tracker[messages_url][1] = get_ratelimits(messages.headers)
+            if messages.status_code == 429:
+                continue
             messages = messages.json()
             for i in range(len(messages)):
                 if i > 9:
                     break
-                if  str(messages[i]["id"]) not in read_messages[channel["id"]] and conv_utime(messages[i]["timestamp"])-start > 0:
+                if str(messages[i]["id"]) not in read_messages[channel["id"]] and conv_utime(messages[i]["timestamp"])-start > 0:
                     read_messages[channel["id"]].pop(len(read_messages[channel["id"]])-1)
                     read_messages[channel["id"]].insert(0, messages[i]["id"])
                     try:
+                        if messages[i]["author"]["bot"]:
+                            continue
+                    except:
+                        pass
+                    try:
                         messages[i]["content"][0]
                     except IndexError:
-                        continue
+                        print(f"ERROR LINE {getframeinfo(currentframe()).lineno}")
                     if messages[i]["content"][0] == PREFIX:
                         theargs = messages[i]["content"].split()
                         if theargs[0] == f"{PREFIX}add":
@@ -64,6 +71,7 @@ def read_guild_messages(guildid):
                                 pass
 
 def add_song(guildid, args):
+    print("HELLO")
     '''
     playlist.json format:
     [
@@ -106,6 +114,7 @@ def add_song(guildid, args):
         })
     playlist_file = open("playlists.json", "w")
     playlist_file.write(json.dumps(playlist_servers,indent=2))
+    playlist_file.close()
     
     
          

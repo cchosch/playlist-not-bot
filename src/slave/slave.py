@@ -69,7 +69,6 @@ def play_playlist(playlist_name, guildid, channelid, prefix):
             for playlists in g["playlists"].keys():
                 if playlists == playlist_name:
                     for song in g["playlists"][playlist_name]:
-                        time.sleep(2+random.uniform(0.0,0.3))
-                        print(song)
+                        time.sleep(2.5+random.uniform(0.0,0.3))
                         requests.post(API_ENDPOINT+"/channels/"+channelid+"/messages",headers={"Authorization":f"{SLAVE_TOKEN}"},data={"content":f"{prefix}play "+song})
 

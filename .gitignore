@@ -1,3 +1,5 @@
 .vscode
 config.json
 playlists.json
+playlists_backup.json
+__pycache__

@@ -2,11 +2,16 @@ import requests
 import json
 import time
 import threading
+import asyncio
+import websockets
 from master import *
-inputs = ["" for i in range(10)]
-while True:
-    ti = input()
-    if ti not in inputs:
-        inputs.pop(len(inputs)-1)
-        inputs.insert(0,ti)
-        print(inputs)
+
+async def themain():
+    new_ws = API_ENDPOINT+"/gateway"
+    cws = requests.get(new_ws,headers={"authorization":f"{SLAVE_TOKEN}"}).json()["url"]
+    async with websockets.connect(cws) as ws:
+        while True:
+            data = json.loads(await ws.recv())
+            print(data)
+
+asyncio.run(themain())
