@@ -4,11 +4,11 @@ Discord bot (no libarary just api requests) that uses a secondary (real) discord
 
 # configuration
 
-First, make a discord application and a discord account that you are will to get banned. Then, make a discord bot attached to the application.
+First, make a discord application and a discord account that you are willing to get banned. Then, make a discord bot attached to that bot.
 
 You're going to need to enable the Oauth2 values `guilds.join` and `bot` in the url generator section. Set the redirect uri to https://www.google.com
 
-Then, make a `config.json` file in the root folder and put your bot's information, your slave account's (real discord account) token and your desired bot prefix like this:
+Then, run `pip install requests` and `pip install websockets`. Also make a `config.json` file in the root folder and put your bot's information, along with the token for the read account and your desired bot prefix like this:
 
 ```json
 {
@@ -26,6 +26,7 @@ That's it, your bot is ready to go! The bot stores all of the playlists in a jso
 [
   {
     "id": "GUILDID1",
+    "uid": "USERID",
     "playlists": {
       "firstplaylist":["example song", "example song"],
       "secondplaylist":["example song", "example song"]
@@ -33,6 +34,7 @@ That's it, your bot is ready to go! The bot stores all of the playlists in a jso
   }
   {
     "id": "GUILDID2",
+    "uid":"USERID2",
     "playlists":{
       "firstplaylist":["example song", "example song"],
       "secondplaylist":["example song","example song"]
