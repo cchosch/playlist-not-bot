@@ -4,7 +4,7 @@ Discord bot (no libarary just api requests) that uses a secondary (real) discord
 
 # configuration
 
-First, make a discord application and a discord account that you are willing to get banned. Then, make a discord bot attached to that bot.
+First, make a discord application and a discord account that you are willing to get banned. Then, make a discord bot attached to that account at www.discord.com/.
 
 You're going to need to enable the Oauth2 values `guilds.join` and `bot` in the url generator section. Set the redirect uri to https://www.google.com
 
