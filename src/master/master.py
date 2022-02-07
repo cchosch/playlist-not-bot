@@ -1,13 +1,16 @@
-from tkinter import W
+import threading
+import asyncio
 import requests
+import websockets
 import time
 import json
 import bot
-import threading
 
-guild_threads = {}
 epoch_tracker = {}
+stop_heartbeat = False
+MAIN_HEARTBEAT = None
 API_ENDPOINT = 'https://discord.com/api/v9'
+SESSION_ID = None
 def read_config():
     myconfig = open("config.json")
     re = json.load(myconfig)
@@ -29,36 +32,56 @@ def updateVariables():
 def get_ratelimits(headers):
     return float(headers["x-ratelimit-reset"]), float(headers["x-ratelimit-remaining"])
 
-def main():
+def sr(res):
+    '''
+    make sure connection has not been terminated with the websocket server and if so reconnect to websocket
+    '''
+    if res["op"] == 9:
+        return False
+    return res
+
+def heartbeat(thesocket, interval):
+    last = time.time()-30
+    while not stop_heartbeat:
+        if time.time()-last > interval-0.5:
+            thesocket.send(json.dumps({"op":1}))
+            last = time.time()
+
+async def main():
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
-    epoch_tracker[guilds_url] = [time.time(),1]
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
-    epoch_tracker[guilds_url][0], epoch_tracker[guilds_url][1] = get_ratelimits(guilds_responce.headers)
+    new_ws = API_ENDPOINT+"/gateway?v=4"
     for guild in guilds_responce.json():
-        time.sleep(0.5)
-        guild_threads[guild["id"]] = threading.Thread(target = bot.read_guild_messages, args = (guild["id"],))
-        print(guild["id"])
-        guild_threads[guild["id"]].start()
+        time.sleep(0.3)
+        bot.read_guild_messages(guild["id"])
     while True:
-        if epoch_tracker[guilds_url][0]-time.time() > epoch_tracker[guilds_url][1]:
-            time.sleep(epoch_tracker[guilds_url][0]-time.time())
-        guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
-        epoch_tracker[guilds_url][0], epoch_tracker[guilds_url][1] = get_ratelimits(guilds_responce.headers)
-        for guild in guilds_responce.json():
-            if guild == "global":
-                break
-            if guild["id"] not in guild_threads.keys():
-                guild_threads[guild["id"]] = threading.Thread(target = bot.read_guild_messages, args = (guild["id"],))
-                guild_threads[guild["id"]].start()
+        cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
+        async with websockets.connect(cws) as ws:
+            interval = (json.loads(await ws.recv())["d"]["heartbeat_interval"])/1000
+            stop_heartbeat = False
+            MAIN_HEARTBEAT = threading.Thread(target=heartbeat, args=(ws, interval))
+            last = time.time()
+            if SESSION_ID == None:
+                handshake = json.dumps({
+                    "op":2,
+                    "d":{"token":f"{SLAVE_TOKEN}","properties":{"$os":"win","$browser:":"disco","$device":"disco"}}
+                })
+                await ws.send(handshake)
+            else:
+                pass
+            while True:
+                res = sr(json.loads(await ws.recv()))
+                if res == False:
+                    stop_heartbeat = True
+                    break
+                if res["op"] == 0:
+                    print(res)
+                    if res["t"] == "READY":
+                        SESSION_ID = res["d"]["session_id"]
+                        continue
+                print(res)
 
 
 
 if __name__ == "__main__":
-    main()
-
-'''
-theheader = {
-    "Authorization": f"{SLAVE_TOKEN}"
-}
-print(requests.get(API_ENDPOINT+"/users/@me",headers=theheader).json())
-'''
+    asyncio.run(main())
