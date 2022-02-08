@@ -5,14 +5,11 @@ import threading
 from inspect import currentframe, getframeinfo
 import os
 import json
-import dateutil.parser as dp
 sys.path.insert(0, os.getcwd()+"/src/slave")
 from slave import *
 from master import *
 bot_epoch_tracker = {}
 
-def conv_utime(timestamp):
-    return dp.parse(timestamp).timestamp()
 
 def add_slave_to_guild(guildid):
     members = requests.get(f"{API_ENDPOINT}/guilds/{guildid}/members/{SLAVE_ID}",headers=MASTER_AUTH_HEADER)

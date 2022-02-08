@@ -1,3 +1,4 @@
+import random
 import threading
 import asyncio
 import requests
@@ -10,7 +11,6 @@ epoch_tracker = {}
 stop_heartbeat = False
 MAIN_HEARTBEAT = None
 API_ENDPOINT = 'https://discord.com/api/v9'
-SESSION_ID = None
 def read_config():
     myconfig = open("config.json")
     re = json.load(myconfig)
@@ -41,30 +41,35 @@ def sr(res):
     return res
 
 def heartbeat(thesocket, interval):
-    last = time.time()-30
+    time.sleep(interval*random.uniform(0.0,1.0))
+    print("SENDING...")
+    asyncio.run(thesocket.send(json.dumps({"op":1})))
+    last = time.time()
     while not stop_heartbeat:
-        if time.time()-last > interval-0.5:
-            thesocket.send(json.dumps({"op":1}))
+        if time.time()-last > interval:
+            asyncio.run(thesocket.send(json.dumps({"op":1})))
             last = time.time()
 
 async def main():
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
     new_ws = API_ENDPOINT+"/gateway?v=4"
+    SESSION_ID = None
     for guild in guilds_responce.json():
         time.sleep(0.3)
-        bot.read_guild_messages(guild["id"])
+        bot.add_slave_to_guild(guild["id"])
     while True:
         cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
         async with websockets.connect(cws) as ws:
             interval = (json.loads(await ws.recv())["d"]["heartbeat_interval"])/1000
             stop_heartbeat = False
             MAIN_HEARTBEAT = threading.Thread(target=heartbeat, args=(ws, interval))
+            MAIN_HEARTBEAT.start()
             last = time.time()
             if SESSION_ID == None:
                 handshake = json.dumps({
                     "op":2,
-                    "d":{"token":f"{SLAVE_TOKEN}","properties":{"$os":"win","$browser:":"disco","$device":"disco"}}
+                    "d":{"token":f"Bot {MASTER_AUTH}","properties":{"$os":"win","$browser:":"disco","$device":"disco"}}
                 })
                 await ws.send(handshake)
             else:
@@ -75,7 +80,6 @@ async def main():
                     stop_heartbeat = True
                     break
                 if res["op"] == 0:
-                    print(res)
                     if res["t"] == "READY":
                         SESSION_ID = res["d"]["session_id"]
                         continue

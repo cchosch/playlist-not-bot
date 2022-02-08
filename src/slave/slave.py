@@ -6,8 +6,8 @@ import time
 import json
 sys.path.insert(0, os.getcwd()+"/src/master/")
 from master import *
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
+
+
 
 def get_code():
     payload = json.dumps({
