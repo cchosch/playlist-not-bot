@@ -1,6 +1,6 @@
 # playlist-not-bot
 
-Discord bot (no libarary just api requests) that uses a secondary (real) discord account to queue songs up
+Discord bot (no libarary just api requests) that stores playlists of songs and uses a secondary (real) discord account to queue songs on other music bots.
 
 # configuration
 
