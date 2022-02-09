@@ -30,7 +30,6 @@ class Heartbeat(threading.Thread):
         while self.snum == None:
             time.sleep(0.1)
         asyncio.run(self.websocket.send(json.dumps({"op":1,"d":self.snum})))
-        quit()
         last = time.time()
         while not self.stop:
             time.sleep(0.2)
