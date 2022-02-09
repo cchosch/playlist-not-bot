@@ -6,9 +6,9 @@ import websockets
 import time
 import json
 import bot
+from heartbeat import *
 
 epoch_tracker = {}
-stop_heartbeat = False
 MAIN_HEARTBEAT = None
 API_ENDPOINT = 'https://discord.com/api/v9'
 def read_config():
@@ -47,13 +47,13 @@ def heartbeat(thesocket, interval):
     last = time.time()
     while not stop_heartbeat:
         if time.time()-last > interval:
-            asyncio.run(thesocket.send(json.dumps({"op":1})))
             last = time.time()
 
 async def main():
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
     new_ws = API_ENDPOINT+"/gateway?v=4"
+    SEQUENCE_NUM = None
     SESSION_ID = None
     for guild in guilds_responce.json():
         time.sleep(0.3)
@@ -62,29 +62,38 @@ async def main():
         cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
         async with websockets.connect(cws) as ws:
             interval = (json.loads(await ws.recv())["d"]["heartbeat_interval"])/1000
-            stop_heartbeat = False
-            MAIN_HEARTBEAT = threading.Thread(target=heartbeat, args=(ws, interval))
+            MAIN_HEARTBEAT = Heartbeat(args=(ws, interval))
             MAIN_HEARTBEAT.start()
-            last = time.time()
             if SESSION_ID == None:
-                handshake = json.dumps({
+                await ws.send(json.dumps({
                     "op":2,
                     "d":{"token":f"Bot {MASTER_AUTH}","properties":{"$os":"win","$browser:":"disco","$device":"disco"}}
-                })
-                await ws.send(handshake)
+                }))
             else:
-                pass
+                print(MASTER_AUTH,SESSION_ID,SEQUENCE_NUM)
+                await ws.send(json.dumps({
+                    "op":6,
+                    "d":{
+                        "token":f"Bot {MASTER_AUTH}",
+                        "session_id":f"{SESSION_ID}",
+                        "seq":f"{SEQUENCE_NUM}"
+                    }
+                }))
             while True:
-                res = sr(json.loads(await ws.recv()))
-                if res == False:
-                    stop_heartbeat = True
+                res = json.loads(await ws.recv())
+                print(res)
+                if res["op"] == 9:
+                    MAIN_HEARTBEAT.stop
                     break
+                if res["op"] != 11:
+                    SEQUENCE_NUM = res["s"]
+                    MAIN_HEARTBEAT.snum = res["s"] 
                 if res["op"] == 0:
                     if res["t"] == "READY":
                         SESSION_ID = res["d"]["session_id"]
                         continue
-                print(res)
-
+                    if res["t"] == "MESSAGE_CREATE":
+                        pass
 
 
 if __name__ == "__main__":

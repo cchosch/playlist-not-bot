@@ -27,6 +27,7 @@ That's it, your bot is ready to go! The bot stores all of the playlists in a jso
   {
     "id": "GUILDID1",
     "uid": "USERID",
+    "":[""]
     "playlists": {
       "firstplaylist":["example song", "example song"],
       "secondplaylist":["example song", "example song"]

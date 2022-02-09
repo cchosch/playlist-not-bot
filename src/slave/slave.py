@@ -4,6 +4,8 @@ import random
 import os
 import time
 import json
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 sys.path.insert(0, os.getcwd()+"/src/master/")
 from master import *
 
@@ -19,7 +21,7 @@ def get_code():
         "content-type":"application/json"
     }
 
-    nextrequest = requests.post(API_ENDPOINT+"/oauth2/authorize?client_id=932752503769018428&response_type=code&redirect_uri=http://71.191.132.246%2F&scope=identify%20guilds.join&state=15773059ghq9183habn",headers=header,data=payload).json()["location"]
+    nextrequest = requests.post(f"{API_ENDPOINT}/oauth2/authorize?client_id={MASTER_CLIENT_ID}&response_type=code&redirect_uri={MASTER_REDIRECT_URI}&scope=identify%20guilds.join&state=15773059ghq9183habn",headers=header,data=payload).json()["location"]
     return parse_qs(urlparse(nextrequest).query)["code"][0]
 
 def exchange_code(code): # ripped from https://discord.com/developers/docs/topics/oauth2

@@ -7,7 +7,7 @@ import websockets
 from heartbeat import *
 
 
-Heartbeat().start()
+Heartbeat(target="hello",args="yo").start()
 
 
 

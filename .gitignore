@@ -2,4 +2,5 @@
 config.json
 playlists.json
 playlists_backup.json
+written.json
 __pycache__

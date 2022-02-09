@@ -19,28 +19,7 @@ def add_slave_to_guild(guildid):
     except KeyError:
         pass
 
-def add_song(guildid, args):
-    print("HELLO")
-    '''
-    playlist.json format:
-    [
-        {
-            "id": "GUILDID1",
-            "playlists": {
-                "firstplaylist":["example song", "example song"],
-                "secondplaylist":["example song", "example song"]
-            }
-        }
-        {
-            "id": "GUILDID2",
-            "playlists":{
-                "firstplaylist":["example song", "example song"],
-                "secondplaylist":["example song","example song"]
-            }
-        }
-    ]
-    '''
-    
+def add_song(guildid, userid, args):
     playlist = args[1]
     song = " ".join(args[2:len(args)])
     playlist_file = open("playlists.json")
