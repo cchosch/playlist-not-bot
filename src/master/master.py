@@ -8,7 +8,9 @@ import json
 import bot
 from heartbeat import *
 
-epoch_tracker = {}
+
+
+guild_vs = {} # voice states
 MAIN_HEARTBEAT = None
 API_ENDPOINT = 'https://discord.com/api/v9'
 def read_config():
@@ -40,15 +42,6 @@ def sr(res):
         return False
     return res
 
-def heartbeat(thesocket, interval):
-    time.sleep(interval*random.uniform(0.0,1.0))
-    print("SENDING...")
-    asyncio.run(thesocket.send(json.dumps({"op":1})))
-    last = time.time()
-    while not stop_heartbeat:
-        if time.time()-last > interval:
-            last = time.time()
-
 async def main():
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
@@ -61,39 +54,54 @@ async def main():
     while True:
         cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
         async with websockets.connect(cws) as ws:
-            interval = (json.loads(await ws.recv())["d"]["heartbeat_interval"])/1000
-            MAIN_HEARTBEAT = Heartbeat(args=(ws, interval))
-            MAIN_HEARTBEAT.start()
-            if SESSION_ID == None:
+            if SESSION_ID != None:
+                await ws.send(json.dumps({
+                    "op": 6,
+                    "d": {
+                        "token": f"Bot {MASTER_AUTH}",
+                        "session_id": SESSION_ID,
+                        "seq": SEQUENCE_NUM
+                    }
+                }))
+                print("DEBUG DATA")
+                print(f"TOKEN: {MASTER_AUTH}, {type(MASTER_AUTH)}")
+                print(f"SESSION_ID: {SESSION_ID}, {type(SESSION_ID)}")
+                print(f"SEQUENCE NUMBER: {SEQUENCE_NUM}, {type(SEQUENCE_NUM)}")
+            else:
                 await ws.send(json.dumps({
                     "op":2,
                     "d":{"token":f"Bot {MASTER_AUTH}","properties":{"$os":"win","$browser:":"disco","$device":"disco"}}
                 }))
-            else:
-                print(MASTER_AUTH,SESSION_ID,SEQUENCE_NUM)
-                await ws.send(json.dumps({
-                    "op":6,
-                    "d":{
-                        "token":f"Bot {MASTER_AUTH}",
-                        "session_id":f"{SESSION_ID}",
-                        "seq":f"{SEQUENCE_NUM}"
-                    }
-                }))
+            interval = (json.loads(await ws.recv())["d"]["heartbeat_interval"])/1000
+            MAIN_HEARTBEAT = Heartbeat(args=(ws, interval))
+            MAIN_HEARTBEAT.start()
             while True:
                 res = json.loads(await ws.recv())
-                print(res)
-                if res["op"] == 9:
-                    MAIN_HEARTBEAT.stop
-                    break
-                if res["op"] != 11:
+                print(json.dumps(res,indent=2))
+                if res["s"] != None:
                     SEQUENCE_NUM = res["s"]
                     MAIN_HEARTBEAT.snum = res["s"] 
+                if res["op"] == 9:
+                    MAIN_HEARTBEAT.stop_exe()
+                    break
                 if res["op"] == 0:
                     if res["t"] == "READY":
                         SESSION_ID = res["d"]["session_id"]
                         continue
+                    if res["t"] == "VOICE_STATE_UPDATE":
+                        if res["d"]["guild_id"] in guild_vs:
+                            pass
+                    if res["t"] == "GUILD_CREATE":
+                        print(res["d"]["id"])
                     if res["t"] == "MESSAGE_CREATE":
-                        pass
+                        if "guild_id" in res["d"].keys(): # if the messages is in a guild
+                            channels = requests.get(f"{API_ENDPOINT}/guilds/"+res["d"]["guild_id"]+"/channels",headers=MASTER_AUTH_HEADER).json()
+                            for c in channels:
+                                print(c)
+                                if c["type"] == 2:
+                                    requests.put(f"{API_ENDPOINT}/channels/"+c["id"]+"/thread-members/@me",headers=MASTER_AUTH_HEADER)
+                                    people = requests.get(f"{API_ENDPOINT}/channels/"+c["id"]+"/thread-members",headers=MASTER_AUTH_HEADER).json()
+                                    print(people)
 
 
 if __name__ == "__main__":
