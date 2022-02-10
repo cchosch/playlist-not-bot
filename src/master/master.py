@@ -92,18 +92,13 @@ async def main():
                         continue
                     if res["t"] == "VOICE_STATE_UPDATE":
                         if res["d"]["guild_id"] in guild_vs:
-                            pass
+                            guild_vs[res["d"]["guildid"]].append(res["d"]) # DEFINETLY DOESN'T WORK FOR NOW
                     if res["t"] == "GUILD_CREATE":
-                        print(res["d"]["id"])
+                        guild_vs[res["d"]["id"]] = res["d"]["voice_states"] # PROBABLY DOESN'T WORK
                     if res["t"] == "MESSAGE_CREATE":
                         if "guild_id" in res["d"].keys(): # if the messages is in a guild
-                            channels = requests.get(f"{API_ENDPOINT}/guilds/"+res["d"]["guild_id"]+"/channels",headers=MASTER_AUTH_HEADER).json()
-                            for c in channels:
-                                print(c)
-                                if c["type"] == 2:
-                                    requests.put(f"{API_ENDPOINT}/channels/"+c["id"]+"/thread-members/@me",headers=MASTER_AUTH_HEADER)
-                                    people = requests.get(f"{API_ENDPOINT}/channels/"+c["id"]+"/thread-members",headers=MASTER_AUTH_HEADER).json()
-                                    print(people)
+                          for i in guild_vs[res["d"]["guild_id"]]:
+                            pass
 
 
 if __name__ == "__main__":
