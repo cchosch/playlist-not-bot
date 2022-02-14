@@ -5,7 +5,7 @@ import requests
 import websockets
 import time
 import json
-import bot
+from bot import *
 from heartbeat import *
 
 
@@ -48,11 +48,12 @@ async def main():
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
     new_ws = API_ENDPOINT+"/gateway?v=4"
+    slave_b = Bot()
     SEQUENCE_NUM = None
     SESSION_ID = None
     for guild in guilds_responce.json():
         time.sleep(0.3)
-        bot.add_slave_to_guild(guild["id"])
+        slave_b.add_slave_to_guild(guild["id"])
     while True:
         cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
         async with websockets.connect(cws) as ws:
@@ -79,7 +80,7 @@ async def main():
             MAIN_HEARTBEAT.start()
             while True:
                 res = json.loads(await ws.recv())
-                print(json.dumps(res,indent=2))
+                print("MASTER BOT\n------------------\n"+json.dumps(res,indent=2))
                 if res["s"] != None:
                     SEQUENCE_NUM = res["s"]
                     MAIN_HEARTBEAT.snum = res["s"] 
@@ -95,18 +96,19 @@ async def main():
                     if res["t"] == "GUILD_CREATE":
                         if res["d"]["voice_states"] != []:
                             for s in res["d"]["voice_states"]:
-                                s["guild_id"] = res["d"]["guildid"]
-                                s["member"] = requests.get(API_ENDPOINT+"/guilds/"+res["d"]["guildid"]+"/members/"+s["user_id"],headers=MASTER_AUTH_HEADER).json()
-                                print(s)
+                                s["guild_id"] = res["d"]["id"]
+                                s["member"] = requests.get(API_ENDPOINT+"/guilds/"+res["d"]["id"]+"/members/"+s["user_id"],headers=MASTER_AUTH_HEADER).json()
                                 voice_states[s["user_id"]] = s
                     if res["t"] == "MESSAGE_CREATE":
-                        if "guild_id" in res["d"].keys(): # if the messages is in a guild
-                          for i in voice_states[res["d"]["guild_id"]]:
-                            pass
-
+                        if res["d"]["author"]["id"] in voice_states.keys():
+                            userid = res["d"]["author"]["id"]
+                            if voice_states[userid]["channel_id"] != None: # in voice channel
+                                pass
+                        pass
 
 if __name__ == "__main__":
     asyncio.run(main())
+    print("done")
 '''
 {
         "user_id": "364873125218746369",
