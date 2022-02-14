@@ -10,7 +10,7 @@ from heartbeat import *
 
 
 
-guild_vs = {} # voice states
+voice_states = {} # voice states
 MAIN_HEARTBEAT = None
 API_ENDPOINT = 'https://discord.com/api/v9'
 def read_config():
@@ -91,15 +91,36 @@ async def main():
                         SESSION_ID = res["d"]["session_id"]
                         continue
                     if res["t"] == "VOICE_STATE_UPDATE":
-                        if res["d"]["guild_id"] in guild_vs:
-                            guild_vs[res["d"]["guildid"]].append(res["d"]) # DEFINETLY DOESN'T WORK FOR NOW
+                        voice_states[res["d"]["user_id"]] = res["d"]
                     if res["t"] == "GUILD_CREATE":
-                        guild_vs[res["d"]["id"]] = res["d"]["voice_states"] # PROBABLY DOESN'T WORK
+                        if res["d"]["voice_states"] != []:
+                            for s in res["d"]["voice_states"]:
+                                s["guild_id"] = res["d"]["guildid"]
+                                s["member"] = requests.get(API_ENDPOINT+"/guilds/"+res["d"]["guildid"]+"/members/"+s["user_id"],headers=MASTER_AUTH_HEADER).json()
+                                print(s)
+                                voice_states[s["user_id"]] = s
                     if res["t"] == "MESSAGE_CREATE":
                         if "guild_id" in res["d"].keys(): # if the messages is in a guild
-                          for i in guild_vs[res["d"]["guild_id"]]:
+                          for i in voice_states[res["d"]["guild_id"]]:
                             pass
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+'''
+{
+        "user_id": "364873125218746369",
+        "suppress": false,
+        "session_id": "7e011d9ae36b44a4e5dd5fc2fd0d0c9d",
+        "self_video": false,
+        "self_mute": false,
+        "self_deaf": false,
+        "request_to_speak_timestamp": null,
+        "mute": false,
+        "deaf": false,
+        "channel_id": "763224124612542508"
+      }
+
+
+
+'''
