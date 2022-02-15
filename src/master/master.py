@@ -45,16 +45,18 @@ def sr(res):
     return res
 
 async def main():
+    slave_b = Bot()
+    threading.Thread(target=slave_b.start_loop).start()
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
     new_ws = API_ENDPOINT+"/gateway?v=4"
-    slave_b = Bot()
     SEQUENCE_NUM = None
     SESSION_ID = None
     for guild in guilds_responce.json():
         time.sleep(0.3)
-        slave_b.add_slave_to_guild(guild["id"])
+        add_slave_to_guild(guild["id"])
     while True:
+        print("connecting to websocket...")
         cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
         async with websockets.connect(cws) as ws:
             if SESSION_ID != None:
@@ -78,13 +80,15 @@ async def main():
             interval = (json.loads(await ws.recv())["d"]["heartbeat_interval"])/1000
             MAIN_HEARTBEAT = Heartbeat(args=(ws, interval))
             MAIN_HEARTBEAT.start()
+            print("connected")
             while True:
                 res = json.loads(await ws.recv())
-                print("MASTER BOT\n------------------\n"+json.dumps(res,indent=2))
+                #print("MASTER\n"+json.dumps(res,indent=2))
                 if res["s"] != None:
                     SEQUENCE_NUM = res["s"]
                     MAIN_HEARTBEAT.snum = res["s"] 
                 if res["op"] == 9:
+                    print("MASTER RECEIVED OP CODE 9")
                     MAIN_HEARTBEAT.stop_exe()
                     break
                 if res["op"] == 0:
@@ -100,11 +104,13 @@ async def main():
                                 s["member"] = requests.get(API_ENDPOINT+"/guilds/"+res["d"]["id"]+"/members/"+s["user_id"],headers=MASTER_AUTH_HEADER).json()
                                 voice_states[s["user_id"]] = s
                     if res["t"] == "MESSAGE_CREATE":
-                        if res["d"]["author"]["id"] in voice_states.keys():
-                            userid = res["d"]["author"]["id"]
-                            if voice_states[userid]["channel_id"] != None: # in voice channel
-                                pass
-                        pass
+                        if res["d"]["content"][0] == PREFIX: # if it is a command
+                            args = res["d"]["content"].split(" ")
+                            if args[0] == f"{PREFIX}":
+                                if res["d"]["author"]["id"] in voice_states.keys(): # 
+                                    userid = res["d"]["author"]["id"]
+                                    if voice_states[userid]["channel_id"] != None: # in voice channel
+                                        pass
 
 if __name__ == "__main__":
     asyncio.run(main())
