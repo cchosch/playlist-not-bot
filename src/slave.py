@@ -6,7 +6,6 @@ import time
 import json
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
-sys.path.insert(0, os.getcwd()+"/src/master/")
 from master import *
 
 

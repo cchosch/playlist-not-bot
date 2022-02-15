@@ -7,7 +7,6 @@ import os
 import json
 from heartbeat import *
 import websockets
-sys.path.insert(0, os.getcwd()+"/src/slave")
 from slave import *
 from master import *
 bot_epoch_tracker = {}
