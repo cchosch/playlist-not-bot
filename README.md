@@ -26,19 +26,44 @@ That's it, your bot is ready to go! The bot stores all of the playlists in a jso
 [
   {
     "id": "GUILDID1",
-    "uid": "USERID",
-    "":[""]
     "playlists": {
-      "firstplaylist":["example song", "example song"],
-      "secondplaylist":["example song", "example song"]
+      "firstplaylist":{
+        "users":{
+          "USER1ID":3,
+          "USER2ID":2 
+        },
+        "pulbic":0,
+        "songs":["example song", "example song"]
+      },
+      "secondplaylist":{
+        "users":{
+          "USER1ID":3,
+          "USER2ID":2
+        },
+        "public": 2,
+        "songs":["example song", "example song"]
+      }
     }
   }
   {
     "id": "GUILDID2",
-    "uid":"USERID2",
-    "playlists":{
-      "firstplaylist":["example song", "example song"],
-      "secondplaylist":["example song","example song"]
+    "playlists": {
+      "firstplaylist":{
+        "users":{
+          "USER1ID":3,
+          "USER2ID":2 
+        },
+        "pulbic":0,
+        "songs":["example song", "example song"]
+      },
+      "secondplaylist":{
+        "users":{
+          "USER1ID":3,
+          "USER2ID":2
+        },
+        "public": 2,
+        "songs":["example song", "example song"]
+      }
     }
   }
 ]

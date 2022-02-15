@@ -20,7 +20,7 @@ class Bot():
         self.ws = None
         self.heartbeat = None
         self.running = True
-
+        self.snum = None
     def start_loop(self):
         asyncio.run(self.main_loop())
 
@@ -29,12 +29,14 @@ class Bot():
         self.ws.send("jghrueohtiroeh")
 
     async def main_loop(self):
+        print("starting bot loop...")
         new_ws = API_ENDPOINT+"/gateway?v=4"
         while self.running:
             cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
             self.ws = await websockets.connect(cws)
+            print("connected to websocket on bot")
             interval = (json.loads(await self.ws.recv())["d"]["heartbeat_interval"])/1000
-            self.heartbeat :threading.Thread = Heartbeat(args=(self.ws, interval))
+            self.heartbeat = Heartbeat(args=(self.ws, interval))
             self.heartbeat.start()
             await self.ws.send(json.dumps({
                 "op":2,
@@ -49,9 +51,12 @@ class Bot():
             }))
             while self.running:
                 x = json.loads(await self.ws.recv())
+                if x["s"] != None:
+                  self.snum = x["s"]
+                  self.heartbeat.snum = x["s"]
                 print("SLAVE\n"+json.dumps(x,indent=2))
 
-def add_song(self, guildid, args):
+def add_song(self, guildid, uid, args):
     playlist = args[1]
     song = " ".join(args[2:len(args)])
     playlist_file = open("playlists.json")
