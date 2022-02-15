@@ -1,9 +1,8 @@
 .vscode
+__pycache__
+test.py
 config.json
 playlists.json
-playlists_backup.json
-written.json
-__pycache__
 pyproject.toml
 poetry.lock
 .replit

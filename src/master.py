@@ -5,7 +5,7 @@ import requests
 import websockets
 import time
 import json
-from bot import *
+from notbot import *
 from heartbeat import *
 
 
@@ -45,7 +45,7 @@ def sr(res):
     return res
 
 async def main():
-    slave_b = Bot()
+    slave_b = NotBot()
     threading.Thread(target=slave_b.start_loop).start()
     guilds_url = API_ENDPOINT+"/users/@me/guilds"
     guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
