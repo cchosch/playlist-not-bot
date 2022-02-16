@@ -4,7 +4,7 @@ import json
 from master import *
 
 
-def add(res, notbot):
+async def add(res, bot):
     args = res["d"]["content"].split(" ")
     if len(args) < 3:
         send_message(SLAVE_TOKEN, res["d"]["channel_id"],"this does not make sense")
@@ -68,12 +68,20 @@ def add(res, notbot):
     playlist_file.write(json.dumps(playlist_servers,indent=2))
     playlist_file.close()
 
-def play(res, notbot):
-    asyncio.run(notbot.ws.send({
+async def play(res, bot):
+    await bot.notBot.ws.send(json.dumps({
         "op":4,
         "d":{
-            "guild_id":res["guild_id"],
-            "channel_id":notbot.bot.voice_states
+            "guild_id":res["d"]["guild_id"],
+            "channel_id":bot.voice_states[res["d"]["author"]["id"]]["channel_id"],
+        }
+    }))
+    time.sleep(2)
+    await bot.notBot.ws.send(json.dumps({
+        "op":4,
+        "d":{
+            "guild_id":res["d"]["guild_id"],
+            "channel_id": None,
         }
     }))
 

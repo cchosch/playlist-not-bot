@@ -80,18 +80,18 @@ The bot stores all of the playlists in a json file in the root folder called `pl
 
 ## Guild Object
 
-| Field       | Description                                                                                                                       | Type        |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| "id"        | id of guild this object belongs to                                                                                                | string      |
+| Field       | Description                                                                                                                      | Type        |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| "id"        | id of guild this object belongs to                                                                                               | string      |
 | "playlists" | json object with the names of all the playlists in the guild as the field and [playlist object's](#playlist-object) as the items | json object |
 
 ## Playlist Object
 
-| Field    | Description                                                                                                                                            | Type             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| Field    | Description                                                                                                                                          | Type             |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | "users"  | json object with fields as user ids and [authorization level](#authorization-level) as item                                                          | json object      |
 | "public" | sets default [authorization level](#authorization-level) for everyone in the given server with 0 representing a private playlist. default value of 0 | integer          |
-| "songs"  | array of song names in playlist                                                                                                                        | array of strings |
+| "songs"  | array of song names in playlist                                                                                                                      | array of strings |
 
 ### Authorization Level
 

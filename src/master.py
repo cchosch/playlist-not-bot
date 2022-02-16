@@ -104,7 +104,7 @@ class Bot():
                                     command = res["d"]["content"].split(" ")[0]
                                     command = command[1:len(command)]
                                     if command in commands.Commands.keys():
-                                        commands.Commands[command](res, self)
+                                        await commands.Commands[command](res, self)
                                     else:
                                         requests.post(f"{API_ENDPOINT}/channels/"+res["d"]["channel_id"]+"/messages",headers=MASTER_AUTH_HEADER,data={"content":"Unkown command: "+command})
 if __name__ == "__main__":
