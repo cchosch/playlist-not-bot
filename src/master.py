@@ -44,12 +44,7 @@ class Bot():
 
     async def main(self):
         threading.Thread(target=self.notBot.start_loop).start()
-        guilds_url = API_ENDPOINT+"/users/@me/guilds"
-        guilds_responce = requests.get(guilds_url,headers=MASTER_AUTH_HEADER)
         new_ws = API_ENDPOINT+"/gateway?v=4"
-        for guild in guilds_responce.json():
-            time.sleep(0.3)
-            notbot.add_slave_to_guild(guild["id"])
         while True:
             print("connecting to websocket...")
             cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
@@ -93,6 +88,8 @@ class Bot():
                         if res["t"] == "VOICE_STATE_UPDATE":
                             self.voice_states[res["d"]["user_id"]] = res["d"]
                         if res["t"] == "GUILD_CREATE":
+                            time.sleep(.3)
+                            notbot.add_slave_to_guild(res["d"]["id"])
                             if res["d"]["voice_states"] != []:
                                 for s in res["d"]["voice_states"]:
                                     s["guild_id"] = res["d"]["id"]
