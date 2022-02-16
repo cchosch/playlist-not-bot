@@ -72,7 +72,10 @@ class Bot():
                 MAIN_HEARTBEAT.start()
                 print("connected")
                 while True:
-                    res = json.loads(await ws.recv())
+                    try:
+                        res = json.loads(await ws.recv())
+                    except json.ConnectionClosedError:
+                        continue
                     #print("MASTER\n"+json.dumps(res,indent=2))
                     if res["s"] != None:
                         self.SEQUENCE_NUM = res["s"]
