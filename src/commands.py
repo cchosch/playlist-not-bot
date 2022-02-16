@@ -1,6 +1,7 @@
 import requests
-from master import *
+import asyncio
 import json
+from master import *
 
 
 def add(res, notbot):
@@ -68,7 +69,13 @@ def add(res, notbot):
     playlist_file.close()
 
 def play(res, notbot):
-    pass
+    asyncio.run(notbot.ws.send({
+        "op":4,
+        "d":{
+            "guild_id":res["guild_id"],
+            "channel_id":notbot.bot.voice_states
+        }
+    }))
 
 Commands = {
     "add":add,

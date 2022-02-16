@@ -38,7 +38,7 @@ def send_message(token, channel_id, message, bot=False):
 class Bot():
     def __init__(self):
         self.voice_states = {} # voice states
-        self.notBot = notbot.NotBot()
+        self.notBot = notbot.NotBot(self)
         self.SEQUENCE_NUM = None
         self.SESSION_ID = None
 

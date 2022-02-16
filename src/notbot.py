@@ -11,10 +11,11 @@ from heartbeat import *
 from master import *
 
 class NotBot():
-    def __init__(self):
-        self.reset()
+    def __init__(self, bot):
+        self.reset(bot)
 
-    def reset(self):
+    def reset(self, bot=None):
+        self.bot = bot
         self.ws = None
         self.heartbeat = None
         self.running = True
