@@ -5,9 +5,9 @@ import threading
 import os
 import json
 import websockets
-from heartbeat import *
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
+from heartbeat import *
 from master import *
 
 class NotBot():
@@ -116,30 +116,6 @@ def play_playlist(playlist_name, guildid, channelid, prefix):
                     for song in g["playlists"][playlist_name]:
                         time.sleep(2.5+random.uniform(0.0,0.3))
                         requests.post(API_ENDPOINT+"/channels/"+channelid+"/messages",headers={"Authorization":f"{SLAVE_TOKEN}"},data={"content":f"{prefix}play "+song})
-def add_song(self, guildid, uid, args):
-    playlist = args[1]
-    song = " ".join(args[2:len(args)])
-    playlist_file = open("playlists.json")
-    playlist_servers = json.load(playlist_file)
-    playlist_file.close()
-    found = False
-    for ps in playlist_servers:
-        if ps["id"] == guildid:
-            found = True
-            if playlist in ps["playlists"].keys():
-                ps["playlists"][playlist].append(song)
-            else:
-                ps["playlists"][playlist] = [song]
-    if not found:
-        playlist_servers.append({
-            "id":guildid,
-            "playlists": {
-                playlist:[song]
-            }
-        })
-    playlist_file = open("playlists.json", "w")
-    playlist_file.write(json.dumps(playlist_servers,indent=2))
-    playlist_file.close()
 
          
 
