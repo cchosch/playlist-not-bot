@@ -79,20 +79,6 @@ async def play(res, bot):
     except json.JSONDecodeError:
         send_message(MASTER_AUTH, res["d"]["channel_id"],"we had a problem on our end, sorry for the inconvenience",bot=True)
         return
-    playlist_file.close()
-    found = False
-    for guild in guilds:
-        if guild["id"] == res["d"]["guild_id"]:
-            found = True
-            for playlist in guild["playlists"].keys():
-                if playlist == args[1]:
-                    for song in playlist["songs"]:
-                        send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+song)
-                else:
-                    found = False
-            break
-    if found == False:
-        send_message(MASTER_AUTH, res["d"]["channel_id"], "could not find your playlist", bot=True)
     await bot.notBot.ws.send(json.dumps({
         "op":4,
         "d":{
@@ -100,7 +86,28 @@ async def play(res, bot):
             "channel_id":bot.voice_states[res["d"]["author"]["id"]]["channel_id"],
         }
     }))
-    time.sleep(2)
+    playlist_file.close()
+    found = False
+    for guild in guilds:
+        if guild["id"] == res["d"]["guild_id"]:
+            found = True
+            if args[1] in guild["playlists"].keys():
+                for song in guild["playlists"][args[1]]["songs"]:
+                    send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+song)
+                    time.sleep(2)
+            else:
+                found = False
+            break
+    if found == False:
+        send_message(MASTER_AUTH, res["d"]["channel_id"], "could not find your playlist", bot=True)
+        await bot.notBot.ws.send(json.dumps({
+            "op":4,
+            "d":{
+                "guild_id":res["d"]["guild_id"],
+                "channel_id": None,
+            }
+        }))
+        return
     await bot.notBot.ws.send(json.dumps({
         "op":4,
         "d":{
