@@ -28,7 +28,17 @@ import commands
 import notbot
 import heartbeat
 
-def send_message(token, channel_id, message, bot=False):
+def read_guilds():
+    ps = open("playlists.json")
+    try:
+        rplaylists = json.load(ps)
+    except json.JSONDecodeError:
+        return []
+    ps.close()
+    return rplaylists
+    
+
+def send_message(token, channel_id, message, bot=True):
     if not bot:
         print(type(channel_id))
         return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":token},data={"content":message})

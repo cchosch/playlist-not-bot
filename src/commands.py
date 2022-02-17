@@ -71,14 +71,9 @@ async def add(res, bot):
 async def play(res, bot):
     args = res["d"]["content"].split(" ")
     if len(args) < 3:
-        send_message(MASTER_AUTH, res["d"]["channel_id"], "i dont understand what you just said", bot=True)
+        send_message(MASTER_AUTH, res["d"]["channel_id"], "i dont understand what you just said")
         return
-    playlist_file = open("playlists.json")
-    try:
-        guilds = json.load(playlist_file)
-    except json.JSONDecodeError:
-        send_message(MASTER_AUTH, res["d"]["channel_id"],"we had a problem on our end, sorry for the inconvenience",bot=True)
-        return
+    guilds = read_guilds()
     await bot.notBot.ws.send(json.dumps({
         "op":4,
         "d":{
@@ -86,27 +81,19 @@ async def play(res, bot):
             "channel_id":bot.voice_states[res["d"]["author"]["id"]]["channel_id"],
         }
     }))
-    playlist_file.close()
     found = False
     for guild in guilds:
         if guild["id"] == res["d"]["guild_id"]:
             found = True
             if args[1] in guild["playlists"].keys():
                 for song in guild["playlists"][args[1]]["songs"]:
-                    send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+song)
+                    send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+song,bot=False)
                     time.sleep(2)
             else:
                 found = False
             break
     if found == False:
-        send_message(MASTER_AUTH, res["d"]["channel_id"], "could not find your playlist", bot=True)
-        await bot.notBot.ws.send(json.dumps({
-            "op":4,
-            "d":{
-                "guild_id":res["d"]["guild_id"],
-                "channel_id": None,
-            }
-        }))
+        send_message(MASTER_AUTH, res["d"]["channel_id"], "could not find your playlist")
         return
     await bot.notBot.ws.send(json.dumps({
         "op":4,
@@ -116,7 +103,29 @@ async def play(res, bot):
         }
     }))
 
+async def settings(res, bot):
+    uid = res["d"]["author"]["id"]
+    args = res["d"]["content"].split(" ")
+    if len(args) < 3:
+        send_message(MASTER_AUTH, res["d"]["channel_id"], "i dont understnad")
+        quit()
+    if args[1] == "prefix":
+        pass
+    else:
+        gid = res["d"]["guild_id"]
+        guilds = read_guilds()
+        for guild in guilds:
+            if guild["id"] == gid:
+                if args[1] in guild["playlists"].keys():
+                    plist = guild["playlists"][args[1]]:
+                    if args[2] == "public":
+                        pass
+                break
+        send_message(MASTER_AUTH, res["d"]["channel_id"], "i dont know what you mean")
+    
+
 Commands = {
     "add":add,
-    "play":play
+    "play":play,
+    "settings":settings
 }
