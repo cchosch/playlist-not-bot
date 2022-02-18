@@ -117,15 +117,27 @@ async def settings(res, bot):
         for guild in guilds:
             if guild["id"] == gid:
                 if args[1] in guild["playlists"].keys():
-                    plist = guild["playlists"][args[1]]:
+                    plist = guild["playlists"][args[1]]
                     if args[2] == "public":
-                        pass
+                        if len(args) < 4 or  type(args[3]) != int or 0 > args[3] > 4:
+                            send_message(MASTER_AUTH, res["d"]["channel_id"], "i dont understand")
+                            break
+                        else:
+                            plist["public"] = args[3]
+                            send_message(MASTER_AUTH, res["d"]["channel_id"], "set "+args[1]+" public to "+args[3])
+                            return
+                            
                 break
         send_message(MASTER_AUTH, res["d"]["channel_id"], "i dont know what you mean")
     
 
+async def psettings(res, bot):
+    pass
+
+
 Commands = {
     "add":add,
     "play":play,
-    "settings":settings
+    "settings":settings,
+    "plist-settings":psettings
 }

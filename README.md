@@ -97,8 +97,8 @@ The bot stores all of the playlists in a json file in the root folder called `pl
 
 | Level | Description                                                                              |
 | ----- | ---------------------------------------------------------------------------------------- |
-| 1     | can play given playlist                                                                  |
-| 2     | do everything in 1 and edit given playlist                                               |
+| 1     | can play playlist (default)                                                        |
+| 2     | do everything in 1 and edit playlist                                               |
 | 3     | do everything in 1-2 and add and remove level 1 and level 2 authorized users to playlist |
 | 4     | edit playlist and add and remove level 1, 2, and 3 users to the playlist                 |
 | 5     | owner, can edit any properties of the playlist                                           |
