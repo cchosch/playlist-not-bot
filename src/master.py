@@ -84,7 +84,7 @@ class Bot():
                 while True:
                     try:
                         res = json.loads(await ws.recv())
-                    except json.ConnectionClosedError:
+                    except websockets.ConnectionClosedError:
                         continue
                     #print("MASTER\n"+json.dumps(res,indent=2))
                     if res["s"] != None:

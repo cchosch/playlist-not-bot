@@ -86,8 +86,11 @@ async def play(res, bot):
         if guild["id"] == res["d"]["guild_id"]:
             found = True
             if args[1] in guild["playlists"].keys():
-                for song in guild["playlists"][args[1]]["songs"]:
-                    send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+song,bot=False)
+                songs = guild["playlists"][args[1]]["songs"]
+                for song in range(len(songs)):
+                    rando_song = random.randint(0,len(songs))
+                    send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+songs[rando_song],bot=False)
+                    songs.pop(rando_song)
                     time.sleep(2)
             else:
                 found = False

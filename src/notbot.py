@@ -1,8 +1,5 @@
 import requests
-import sys
 import asyncio
-import threading
-import os
 import json
 import websockets
 from urllib.parse import urlparse
@@ -28,12 +25,12 @@ class NotBot():
         self.ws.send("jghrueohtiroeh")
 
     async def main_loop(self):
-        print("starting bot loop...")
+        print("starting slave loop...")
         new_ws = API_ENDPOINT+"/gateway?v=4"
         while self.running:
             cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
             self.ws = await websockets.connect(cws)
-            print("connected to websocket on bot")
+            print("connected to websocket on slave")
             interval = (json.loads(await self.ws.recv())["d"]["heartbeat_interval"])/1000
             self.heartbeat = Heartbeat(args=(self.ws, interval))
             self.heartbeat.start()
@@ -53,7 +50,6 @@ class NotBot():
                 if x["s"] != None:
                   self.snum = x["s"]
                   self.heartbeat.snum = x["s"]
-                print("SLAVE\n"+json.dumps(x,indent=2))
 
 def get_code():
     payload = json.dumps({
