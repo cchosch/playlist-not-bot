@@ -6,4 +6,5 @@ playlists.json
 pyproject.toml
 poetry.lock
 .replit
-convert
+playlist.html
+playlist_files
