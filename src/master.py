@@ -40,7 +40,6 @@ def read_guilds():
 
 def send_message(token, channel_id, message, bot=True):
     if not bot:
-        print(type(channel_id))
         return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":token},data={"content":message})
     return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":f"Bot {token}"},data={"content":message})
 
