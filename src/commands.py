@@ -88,7 +88,7 @@ async def play(res, bot):
             if args[1] in guild["playlists"].keys():
                 songs = guild["playlists"][args[1]]["songs"]
                 for song in range(len(songs)):
-                    rando_song = random.randint(0,len(songs))
+                    rando_song = random.randint(0,len(songs)-1)
                     send_message(SLAVE_TOKEN, res["d"]["channel_id"], f"{args[2]}play "+songs[rando_song],bot=False)
                     songs.pop(rando_song)
                     time.sleep(2)
