@@ -3,6 +3,8 @@ import asyncio
 import json
 from master import *
 
+async def create(res, bot):
+    pass
 
 async def add(res, bot):
     args = res["d"]["content"].split(" ")
@@ -14,7 +16,7 @@ async def add(res, bot):
     playlist = args[1]
     song = " ".join(args[2:len(args)])
 
-    playlist_file = open("playlists.json")
+    playlist_file = open(f"{PLAYLISTS_DIR}/playlists.json")
     try:
         playlist_servers = json.load(playlist_file)
     except json.JSONDecodeError:
@@ -28,18 +30,18 @@ async def add(res, bot):
         except KeyError:
             playlist_servers = []
             break
-        if ps["id"] == guildid:
-            found[0] = True
-            for play in ps["playlists"].keys():
-                if playlist == play:
-                    found[1] = True
-                    if ownerid in ps["playlists"][play]["users"].keys():
-                        if ps["playlists"][play]["users"][ownerid] != None:
+        if ps["id"] == guildid: # if current guildid is this playlist_server's id
+            found[0] = True # found guildid
+            for play in ps["playlists"].keys(): # for playlist in guild
+                if playlist == play: # if this playlist is equal to current guild's playlist
+                    found[1] = True # found playlist and guild
+                    if ownerid in ps["playlists"][play]["users"].keys(): # if ownerid has some type of perms
+                        if ps["playlists"][play]["users"][ownerid] != None: # if any perms?
                             ps["playlists"][play]["songs"].append(song)
                             send_message(MASTER_AUTH,res["d"]["channel_id"], f"added {song} to {playlist}",bot=True)
                     else:
                         send_message(MASTER_AUTH, res["d"]["channel_id"], "You are not authorized to add songs to this playlist. Sucks to suck!", bot=True)
-            if found[1] == False:
+            if found[1] == False: # if never found playlist in this guild make a new playlist and add this song to the array
                 ps["playlists"][playlist] = {
                     "users":{
                         ownerid: 5
@@ -49,23 +51,18 @@ async def add(res, bot):
                 }
                 send_message(MASTER_AUTH, res["d"]["channel_id"], "Created new playlist called "+playlist, bot=True)
             break
-    if not found[0]:
-        playlist_servers.append({
-            "id":guildid,
-            "playlists": {
-                playlist:{
-                    "users":{
-                        ownerid: 5
-                    },
-                    "public": 0,
-                    "songs":[song]
-                }
-            }
+    if not found[0]: # if never found guild
+        Playlist_File.create_playlist(guildid, playlist, {
+            "users":{
+                ownerid: 5
+            },
+            "public": 0,
+            "songs":[song]
         })
         send_message(MASTER_AUTH, res["d"]["channel_id"], "Created new playlist called "+playlist, bot=True)
 
-    playlist_file = open("playlists.json", "w")
-    playlist_file.write(json.dumps(playlist_servers,indent=2))
+    playlist_file = open(f"{PLAYLISTS_DIR}/playlists.json", "w")
+    playlist_file.write(json.dumps(playlist_servers,indent=2)) # write updated playlist file
     playlist_file.close()
 
 async def play(res, bot):

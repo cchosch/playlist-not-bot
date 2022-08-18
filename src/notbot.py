@@ -7,6 +7,9 @@ from urllib.parse import parse_qs
 from heartbeat import *
 from master import *
 
+'''
+this is technically not a discord bot account, it is a regular discord account used 
+'''
 class NotBot():
     def __init__(self, bot):
         self.reset(bot)
@@ -17,6 +20,7 @@ class NotBot():
         self.heartbeat = None
         self.running = True
         self.snum = None
+
     def start_loop(self):
         asyncio.run(self.main_loop())
 
@@ -103,7 +107,7 @@ def add_to_guild(access_token, guildID): # ripped from https://dev.to/dandev95/a
     print(requests.put(f"{API_ENDPOINT}/guilds/{guildID}/members/{SLAVE_ID}", headers=headers, json=data))
 
 def play_playlist(playlist_name, guildid, channelid, prefix):
-    playlist_file = open("playlists.json")
+    playlist_file = open(f"{PLAYLISTS_DIR}/playlists.json")
     p_obj = json.load(playlist_file)
     playlist_file.close()
     for g in p_obj:

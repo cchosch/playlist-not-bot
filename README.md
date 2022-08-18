@@ -11,7 +11,7 @@ THE CONFIGURATION FOR THIS PROJECT IS STORED IN A FILE CALLED `config.json`. DO 
 First, make a discord application and a discord account that you are willing to get banned.
 Then, make a discord application attached to that account at https://www.discord.com/developers/applications.
 After that, go to the oath2 general section and click "add redirect". If you have a domain, put it in this field. However, if you dont own a domain put `https://www.google.com` in this field.
-Whence you have that application created and redirect URI set, go to the "Bot" section and click "add bot".
+After you have that application created and redirect URI set, go to the "Bot" section and click "add bot".
 
 Then, run `pip install websockets`. Also make a `config.json` file in the root folder and put your bot's information, along with the token for the read account and your desired bot prefix like this:
 
@@ -27,63 +27,20 @@ Then, run `pip install websockets`. Also make a `config.json` file in the root f
 
 That's it, your bot is ready to go!
 
-# playlist.json
+# /.playlists
 
-The bot stores all of the playlists in a json file in the root folder called `playlists.json`. The formatting of `playlists.json` is as follows:
+The bot stores the playlists in their respective dirs following this rule: `cwd/.playlists/guilid/md5hash(playlistname)`. Here's an example of what that might look like
 
 ```json
-[
-  {
-    "id": "GUILDID1",
-    "playlists": {
-      "firstplaylist":{
-        "users":{
-          "USER1ID":3,
-          "USER2ID":2
-        },
-        "pulbic":0,
-        "songs":["example song", "example song"]
-      },
-      "secondplaylist":{
-        "users":{
-          "USER1ID":3,
-          "USER2ID":2
-        },
-        "public": 2,
-        "songs":["example song", "example song"]
-      }
-    }
-  }
-  {
-    "id": "GUILDID2",
-    "playlists": {
-      "firstplaylist":{
-        "users":{
-          "USER1ID":3,
-          "USER2ID":2
-        },
-        "pulbic":0,
-        "songs":["example song", "example song"]
-      },
-      "secondplaylist":{
-        "users":{
-          "USER1ID":3,
-          "USER2ID":2
-        },
-        "public": 2,
-        "songs":["example song", "example song"]
-      }
-    }
-  }
-]
+{
+"users":{
+  "USER1ID":3,
+  "USER2ID":2
+  },
+  "pulbic":0,
+  "songs":["example song", "example song"]
+}
 ```
-
-## Guild Object
-
-| Field       | Description                                                                                                                      | Type        |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| "id"        | id of guild this object belongs to                                                                                               | string      |
-| "playlists" | json object with the names of all the playlists in the guild as the field and [playlist object's](#playlist-object) as the items | json object |
 
 ## Playlist Object
 
@@ -99,6 +56,5 @@ The bot stores all of the playlists in a json file in the root folder called `pl
 | ----- | ---------------------------------------------------------------------------------------- |
 | 1     | can play playlist (default)                                                        |
 | 2     | do everything in 1 and edit playlist                                               |
-| 3     | do everything in 1-2 and add and remove level 1 and level 2 authorized users to playlist |
-| 4     | edit playlist and add and remove level 1, 2, and 3 users to the playlist                 |
-| 5     | owner, can edit any properties of the playlist                                           |
+| 3     | edit playlist and add and remove level 1, 2, and 3 users to the playlist                 |
+| 4     | owner, can edit any properties of the playlist                                           |

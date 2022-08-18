@@ -1,10 +1,15 @@
 .vscode
 __pycache__
 test.py
+
 config.json
 playlists.json
+
 pyproject.toml
 poetry.lock
+
+/.playlists
+
 .replit
 playlist.html
 playlist_files

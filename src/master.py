@@ -1,13 +1,27 @@
 import json
+import os
 import random
 import threading
 import asyncio
 import requests
 import websockets
+import hashlib
 import time
+import platform
 API_ENDPOINT = 'https://discord.com/api/v9'
-def read_config():
 
+SLSH = "/"
+if platform.system() == "Windows":
+    SLSH = "\\"
+PLAYLISTS_DIR = os.getcwd()+SLSH+".playlists"
+
+if not os.path.exists(PLAYLISTS_DIR):
+    os.mkdir(PLAYLISTS_DIR)
+    if platform.system() == "Windows":
+        import ctypes
+        ctypes.windll.kernel32.SetFileAttributesW(PLAYLISTS_DIR, 0x02)
+
+def read_config():
     myconfig = open("config.json")
     re = json.load(myconfig)
     myconfig.close()
@@ -28,21 +42,51 @@ import commands
 import notbot
 import heartbeat
 
+
 def read_guilds():
-    ps = open("playlists.json")
-    try:
-        rplaylists = json.load(ps)
-    except json.JSONDecodeError:
-        return []
-    ps.close()
-    return rplaylists
-    
+    return os.listdir(PLAYLISTS_DIR)
 
 def send_message(token, channel_id, message, bot=True):
     if not bot:
         return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":token},data={"content":message})
     return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":f"Bot {token}"},data={"content":message})
+    
+class Playlist_File():
+    @staticmethod
+    def get_playlist_dir(guildid, playlist: str) -> str:
+        #      dir to pfold         guildid        md5 hashed playlist name
+        return PLAYLISTS_DIR +SLSH+ guildid +SLSH+ hashlib.md5(playlist.encode()).hexdigest()
+        pass
 
+    @staticmethod
+    def update_playlist(guildid, playlist : str, json_obj: dict):
+        pdir = Playlist_File.get_playlist_dir(guildid, playlist)
+        if not os.path.exists(pdir):
+            print(f"UPDATE_PLAYLIST path doesn't exists \nguildid: {guildid}\nplaylistname: {playlist}\nfile_dir: {pdir}")
+            return
+
+        file = open(pdir, "w")
+        file.write(json.dumps(json_obj, indent=2))
+        file.close()
+
+    def get_playlist(guildid, playlist) -> dict:
+        file = open(Playlist_File.get_playlist_dir(guildid, playlist), "r")
+        contents = json.loads(file.read())
+        file.close()
+        return contents
+
+    @staticmethod
+    def create_playlist(guildid, playlist : str, json_obj: dict):
+        pdir = Playlist_File.get_playlist_dir(guildid, playlist)
+        if os.path.exists(pdir):
+            print(f"CREATE_PLAYLIST path exists \nguildid: {guildid}\nplaylistname: {playlist}\nfile_dir: {pdir}")
+            return 
+        if not os.path.exists(PLAYLISTS_DIR+SLSH+guildid):
+            os.mkdir(PLAYLISTS_DIR+SLSH+guildid)
+            
+        file = open(pdir, "w")
+        file.write(json.dumps(json_obj, indent=2))
+        file.close()
 
 class Bot():
     def __init__(self):
@@ -108,14 +152,12 @@ class Bot():
                                     s["member"] = requests.get(API_ENDPOINT+"/guilds/"+res["d"]["id"]+"/members/"+s["user_id"],headers=MASTER_AUTH_HEADER).json()
                                     self.voice_states[s["user_id"]] = s
                         if res["t"] == "MESSAGE_CREATE":
-                            if res["d"]["content"] != "":
-                                if res["d"]["content"][0] == PREFIX:
-                                    command = res["d"]["content"].split(" ")[0]
-                                    command = command[1:len(command)]
-                                    if command in commands.Commands.keys():
-                                        await commands.Commands[command](res, self)
-                                    else:
-                                        requests.post(f"{API_ENDPOINT}/channels/"+res["d"]["channel_id"]+"/messages",headers=MASTER_AUTH_HEADER,data={"content":"Unkown command: "+command})
+                            if res["d"]["content"] != "" and res["d"]["content"][0] == PREFIX:
+                                command :str = (res["d"]["content"].split(" ")[0]).removeprefix(PREFIX)
+                                if command in commands.Commands.keys():
+                                    await commands.Commands[command](res, self)
+                                else:
+                                    requests.post(f"{API_ENDPOINT}/channels/"+res["d"]["channel_id"]+"/messages",headers=MASTER_AUTH_HEADER,data={"content":"Unkown command: "+command})
 if __name__ == "__main__":
     mybot = Bot()
     asyncio.run(mybot.main())
