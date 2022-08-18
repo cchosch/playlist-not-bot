@@ -30,7 +30,7 @@ class NotBot():
 
     async def main_loop(self):
         print("starting slave loop...")
-        new_ws = API_ENDPOINT+"/gateway?v=4"
+        new_ws = API_ENDPOINT+"/gateway?v=10&encoding=json"
         while self.running:
             cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]
             self.ws = await websockets.connect(cws)

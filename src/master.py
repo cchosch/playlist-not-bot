@@ -51,42 +51,89 @@ def send_message(token, channel_id, message, bot=True):
         return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":token},data={"content":message})
     return requests.post(f"{API_ENDPOINT}/channels/{channel_id}/messages",headers={"authorization":f"Bot {token}"},data={"content":message})
     
-class Playlist_File():
-    @staticmethod
-    def get_playlist_dir(guildid, playlist: str) -> str:
-        #      dir to pfold         guildid        md5 hashed playlist name
-        return PLAYLISTS_DIR +SLSH+ guildid +SLSH+ hashlib.md5(playlist.encode()).hexdigest()
-        pass
+class Playlist():
+    def __init__(self, guildId: str, playlistName: str, users: dict={}, songs: list=[], public: int=0):
+        self._guildId = guildId
+        self._name = playlistName
+        self.update_path()
+        self.update_dir()
+        self.already_exists = False
+        try:
+            self.update_from_file()
+            self.already_exists = True
+        except FileNotFoundError:
+            self.users = users
+            self.songs = songs
+            self.public = public
 
-    @staticmethod
-    def update_playlist(guildid, playlist : str, json_obj: dict):
-        pdir = Playlist_File.get_playlist_dir(guildid, playlist)
-        if not os.path.exists(pdir):
-            print(f"UPDATE_PLAYLIST path doesn't exists \nguildid: {guildid}\nplaylistname: {playlist}\nfile_dir: {pdir}")
-            return
+    @property
+    def guildId(self):
+        return self._guildId
 
-        file = open(pdir, "w")
-        file.write(json.dumps(json_obj, indent=2))
+    @guildId.setter
+    def guildId(self, new_val):
+        self._guildId = new_val
+        self.update_path()
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, new_val):
+        self._name = new_val
+        self.update_path()
+
+    def update_from_file(self) -> dict:
+        if not os.path.exists(self.update_dir()):
+            raise FileNotFoundError(self.dir)
+        
+        file = open(self.path, "r")
+        contents = json.loads(file.read().strip())
         file.close()
-
-    def get_playlist(guildid, playlist) -> dict:
-        file = open(Playlist_File.get_playlist_dir(guildid, playlist), "r")
-        contents = json.loads(file.read())
-        file.close()
+        try:
+            self.users = contents["users"]
+            self.public = contents["public"]
+            self.songs = contents["songs"]
+        except KeyError as e:
+            print(f"KEY ERROR update_from_file: \nJSON FILE PATH: {self.path} \n{e}")
+            return {}
         return contents
 
-    @staticmethod
-    def create_playlist(guildid, playlist : str, json_obj: dict):
-        pdir = Playlist_File.get_playlist_dir(guildid, playlist)
-        if os.path.exists(pdir):
-            print(f"CREATE_PLAYLIST path exists \nguildid: {guildid}\nplaylistname: {playlist}\nfile_dir: {pdir}")
-            return 
-        if not os.path.exists(PLAYLISTS_DIR+SLSH+guildid):
-            os.mkdir(PLAYLISTS_DIR+SLSH+guildid)
+    def update_path(self) -> str:
+        #           dir to pfold         guildid             md5 hashed name
+        self.path =  PLAYLISTS_DIR +SLSH+ self.guildId +SLSH+ hashlib.md5(self.name.encode()).hexdigest()
+        self.update_dir()
+        return self.path
+    
+    def update_dir(self) -> str:
+        self.dir = PLAYLISTS_DIR +SLSH+ self.guildId +SLSH
+        return self.dir
+
+    def remove_user(self, uid) -> None:
+        self.users.pop(uid, None)
+    
+    def add_user(self, uid, auth_level) -> None:
+        self.users[uid] = auth_level
+
+    def get_user_auth(self, uid) -> int:
+        return self.users.get(uid, self.public)
+    
+    def set_default_auth(self, auth):
+        self.public = auth
+
+    def save(self) -> None:
+        if not os.path.exists(self.dir):
+            os.mkdir(self.dir)
             
-        file = open(pdir, "w")
-        file.write(json.dumps(json_obj, indent=2))
+        file = open(self.path, "w")
+        file.write(json.dumps({
+            "users": self.users,
+            "public": self.public,
+            "songs": self.songs
+        }, indent=2))
         file.close()
+
 
 class Bot():
     def __init__(self):
@@ -97,7 +144,7 @@ class Bot():
 
     async def main(self):
         threading.Thread(target=self.notBot.start_loop).start()
-        new_ws = API_ENDPOINT+"/gateway?v=4"
+        new_ws = API_ENDPOINT+"/gateway"
         while True:
             print("connecting to websocket...")
             cws = requests.get(new_ws,headers=MASTER_AUTH_HEADER).json()["url"]

@@ -44,17 +44,18 @@ The bot stores the playlists in their respective dirs following this rule: `cwd/
 
 ## Playlist Object
 
-| Field    | Description                                                                                                                                          | Type             |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| "users"  | json object with fields as user ids and [authorization level](#authorization-level) as item                                                          | json object      |
-| "public" | sets default [authorization level](#authorization-level) for everyone in the given server with 0 representing a private playlist. default value of 0 | integer          |
-| "songs"  | array of song names in playlist                                                                                                                      | array of strings |
+| Field    | Description                                                                                                                                          | Type      |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| "users"  | json object with user ids mapped to their corrosponding [authorization level](#authorization-level)                                                  | dict      |
+| "public" | sets default [authorization level](#authorization-level) for everyone in the given server (on creating playlist this value is set to 0)              | int       |
+| "songs"  | list of song names in playlist                                                                                                                       | list[str] |
 
 ### Authorization Level
 
-| Level | Description                                                                              |
-| ----- | ---------------------------------------------------------------------------------------- |
-| 1     | can play playlist (default)                                                        |
-| 2     | do everything in 1 and edit playlist                                               |
-| 3     | edit playlist and add and remove level 1, 2, and 3 users to the playlist                 |
-| 4     | owner, can edit any properties of the playlist                                           |
+| Level | Description                                                        |
+| ----- | ------------------------------------------------------------------ |
+|   0   | cannot play playlist                                               |
+|   1   | can play playlist                                                  |
+|   2   | play and edit playlist                                             |
+|   3   | everything in 2 and add/remove level 1 and 2 users to the playlist |
+|   4   | owner, can edit any property of the playlist                       |
