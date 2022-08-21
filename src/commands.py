@@ -2,14 +2,45 @@ import requests
 import asyncio
 import json
 from master import *
+from bs4 import BeautifulSoup
 
 def get_attributes_from_res(res):
-
     return {
         "authorid": res["d"]["author"]["id"],
         "guildid": res["d"]["guild_id"],
         "channelid": res["d"]["channel_id"],
     }
+
+def scrape_apple_music_link(link):
+    mainreq = requests.get(link)
+    if str(mainreq.status_code)[0] != "2":
+        print(f"received {mainreq.status_code} error with {link}")
+        return
+    sitecontent = BeautifulSoup(mainreq.content,features="html.parser")
+    songlistings = sitecontent.find_all("div",{"class": "songs-list-row songs-list-row--web-preview web-preview songs-list-row--two-lines songs-list-row--song"})
+    songarr = []
+    cname = None
+    for songlist in songlistings:
+        songs = songlist.findChildren("div", {"class": "songs-list-row__song-name"}, recursive=True)
+        artists = songlist.findChildren("a", {"class": "songs-list-row__link"}, recursive=True)
+        seen_artist = ""
+        
+        for song in songs:
+            cname = song.text
+        for artist in enumerate(artists):
+            if artist[0] == 0:
+                seen_artist = artist[1].text
+
+            elif artist[1].text == seen_artist:
+                break
+            else:
+                cname = artist[1].text+" & "+cname
+                break
+
+            cname = artist[1].text+" - "+cname
+        print(cname)
+        songarr.append(cname)
+    pass
 
 async def create(res, bot):
     pass

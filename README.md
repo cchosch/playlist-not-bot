@@ -13,7 +13,7 @@ Then, make a discord application attached to that account at https://www.discord
 After that, go to the oath2 general section and click "add redirect". If you have a domain, put it in this field. However, if you dont own a domain put `https://www.google.com` in this field.
 After you have that application created and redirect URI set, go to the "Bot" section and click "add bot".
 
-Then, run `pip install websockets`. Also make a `config.json` file in the root folder and put your bot's information, along with the token for the read account and your desired bot prefix like this:
+Then, run `pip install websockets` & `pip install bs4`. Also make a `config.json` file in the root folder and put your bot's information, along with the token for the read account and your desired bot prefix like this:
 
 ```json
 {
@@ -29,7 +29,7 @@ That's it, your bot is ready to go!
 
 # /.playlists
 
-The bot stores the playlists in their respective dirs following this rule: `cwd/.playlists/guilid/md5hash(playlistname)`. Here's an example of what that might look like
+The bot stores the playlists in their respective dirs following this rule: `cwd/.playlists/guilid/md5hash(playlistname)`. Here's an example of what that might look like:
 
 ```json
 {
