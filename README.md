@@ -1,10 +1,10 @@
 # playlist-not-bot
 
-Discord bot (no libarary just api requests) that stores playlists of songs and uses a secondary (real) discord account to queue songs on other music bots.
+This project is a discord bot that stores playlists of songs in a directory (no db) and uses a secondary discord account to queue songs on other music bots.
 
 # WARNING
 
-THE CONFIGURATION FOR THIS PROJECT IS STORED IN A FILE CALLED `config.json`. DO NOT RENAME THIS FILE AT ANY POINT AS IT CONTAINS API TOKENS THAT COULD BE USED TO HACK THESE ACCOUNTS.
+Do not commit your config file to github unless you want anyone to be able to login to your discord account.
 
 # Configuration and config.json
 
@@ -29,7 +29,7 @@ That's it, your bot is ready to go!
 
 # /.playlists
 
-The bot stores the playlists in their respective dirs following this rule: `cwd/.playlists/guilid/md5hash(playlistname)`. Here's an example of what that might look like:
+The bot stores the playlists in their respective dirs following this rule: `./.playlists/{guild_id}/md5hash(playlistname)`. Here's an example of what that might look like:
 
 ```json
 {
